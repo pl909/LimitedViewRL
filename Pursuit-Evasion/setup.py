@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name="pursuit-evasion",
-    version='0.0.1',
+    name="pursuit_evasion",
+    version='0.0.2',
     install_requires=['gym',
                       'pybullet',
                       'numpy',

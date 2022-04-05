@@ -3,7 +3,8 @@ import numpy as np
 import pybullet as pb
 import time
 
-import resources as r
+import pursuit_evasion.resources as r
+from pursuit_evasion.resources.quadrotor import Quadrotor
 
 # PursuitEvasion-v0
 
@@ -32,10 +33,8 @@ class PursuitEvasionEnv(gym.Env):
 
         # Add plane and robot models
         self.planeId = pb.loadURDF("plane.urdf")
-        self.robotId = pb.loadURDF('./resources/quadrotor.urdf', [0, 1, 1])
-
-        # Draw robot frame
-        r.draw_frame(self.pbClient, self.robotId, -1)
+        # Drone 1:
+        self.drone1 = Quadrotor([0, 1, 1], self.pbClient)
 
 
     def step(self, action):
@@ -48,22 +47,14 @@ class PursuitEvasionEnv(gym.Env):
         reward = 0
         goal = np.array([1, 3, 1])
 
-        forceZ = action[0]
-        torqueX = action[1]
-        torqueY = action[2]
-        torqueZ = action[3]
-
-        # Apply movement inputs
-        controlInput = (forceZ, torqueX, torqueY, torqueZ)
-        r.force_torque_control(self.pbClient, self.robotId, controlInput)
+        # Apply action:
+        self.drone1.apply_action(action)
 
         pb.stepSimulation()
         time.sleep(1 / 240)
 
-        # Get observation
-        robotObs = r.get_robot_state(self.pbClient, self.robotId)
-        pos, orn, _, _ = robotObs
-        obs =  np.array([pos[0], pos[1], pos[2], orn[0], orn[1], orn[2]])
+        # Get observation and position
+        obs, pos = self.drone1.get_observation()
 
         # Detected done:
         # Goal: (1, 3, 1)
