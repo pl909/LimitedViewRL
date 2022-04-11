@@ -34,7 +34,7 @@ class PursuitEvasionEnv(gym.Env):
         # Add plane and robot models
         self.planeId = pb.loadURDF("plane.urdf")
         # Drone 1:
-        self.drone1 = Quadrotor([0, 1, 1], self.pbClient)
+        self.drone1 = Quadrotor(client=self.pbClient, startPosition=[0, 1, 1])
 
 
     def step(self, action):

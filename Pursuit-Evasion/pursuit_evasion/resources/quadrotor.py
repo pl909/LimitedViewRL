@@ -10,7 +10,7 @@ class Quadrotor:
         f_name = os.path.join(os.path.dirname(__file__),
                               'quadrotor.urdf')
         self.quadrotor = pb.loadURDF(fileName=f_name,
-                              basePosition=[startPosition],
+                              basePosition=startPosition,
                               physicsClientId=client)
 
         # Draw robot frame
