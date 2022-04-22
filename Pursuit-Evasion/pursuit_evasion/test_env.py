@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from envs.pursuit_evasion_env import PursuitEvasionEnv
+from pursuit_evasion.envs.pursuit_evasion_env import PursuitEvasionEnv
 
 if __name__ == '__main__':
     env = gym.make('PursuitEvasion-v0')

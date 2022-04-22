@@ -5,13 +5,13 @@ import os
 from .utils import *
 
 class Quadrotor:
-    def __init__(self, client, startPosition):
-        self.client = client
-        f_name = os.path.join(os.path.dirname(__file__),
-                              'quadrotor.urdf')
-        self.quadrotor = pb.loadURDF(fileName=f_name,
-                              basePosition=startPosition,
-                              physicsClientId=client)
+    def __init__(self, urdf, startPosition):
+        # self.client = client
+        # f_name = os.path.join(os.path.dirname(__file__),
+        #                       'quadrotor.urdf')
+        self.quadrotor = pb.loadURDF(fileName=urdf,
+                              basePosition=startPosition)
+                            #   physicsClientId=client)
 
         # Draw robot frame
         draw_frame(self.pbClient, self.quadrotor, -1)
