@@ -3,8 +3,8 @@ import numpy as np
 import pybullet as pb
 import time
 
-import pursuit_evasion.resources as r
-from pursuit_evasion.resources.quadrotor import Quadrotor
+from pursuit_evasion.resources import utils as r
+from pursuit_evasion.resources import Quadrotor
 
 # PursuitEvasion-v0
 
