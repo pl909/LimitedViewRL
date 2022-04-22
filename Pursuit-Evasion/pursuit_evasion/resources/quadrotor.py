@@ -5,16 +5,17 @@ import os
 from .utils import *
 
 class Quadrotor:
-    def __init__(self, urdf, startPosition):
-        # self.client = client
+    def __init__(self, urdf, startPosition, client):
+        self.client = client
         # f_name = os.path.join(os.path.dirname(__file__),
         #                       'quadrotor.urdf')
+        # self.pbClient = initializeGUI(enable_gui=True)
         self.quadrotor = pb.loadURDF(fileName=urdf,
                               basePosition=startPosition)
-                            #   physicsClientId=client)
+                            #   physicsClientId=initializeGUI(enable_gui=True))
 
         # Draw robot frame
-        draw_frame(self.pbClient, self.quadrotor, -1)
+        draw_frame(self.client, self.quadrotor, -1)
 
     def get_ids(self):
         return self.client, self.quadrotor
