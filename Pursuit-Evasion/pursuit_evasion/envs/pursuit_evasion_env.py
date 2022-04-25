@@ -12,6 +12,8 @@ class PursuitEvasionEnv(gym.Env):
     metadata = {'render.modes': ['human']}  
   
     def __init__(self):
+        
+        self.done = False
 
         # Action Space of 4 actions
         # (force z, torque x, torque y, torque z)
@@ -22,8 +24,8 @@ class PursuitEvasionEnv(gym.Env):
         # Observation Space of 6 elements: 2 arrays of 3 elements
         # (Robot Position(x,y,z), Robot Orientation(x,y,z))
         self.observation_space = gym.spaces.box.Box(
-            low = np.array([-20, -20, -20, -10, -10, -10]),
-            high = np.array([20, 20, 20, 10, 10, 10]))
+            low = np.array([-200, -200, -200, -100, -100, -100]),
+            high = np.array([200, 200, 200, 100, 100, 100]))
 
         # Random seed generator
         self.np_random, _ = gym.utils.seeding.np_random()
@@ -34,8 +36,9 @@ class PursuitEvasionEnv(gym.Env):
         # Add plane and robot models
         self.planeId = pb.loadURDF("plane.urdf")
         # Drone 1:
+        self.startPosition1 = [0, 1, 1]
         self.drone1 = Quadrotor(urdf='C:/DEV/Pursuit-Evasion/Pursuit-Evasion-Quadcopter/Pursuit-Evasion/pursuit_evasion/resources/robot_models/quadrotor.urdf',
-                    startPosition=[0, 1, 1], client=self.pbClient)
+                    startPosition=self.startPosition1, client=self.pbClient)
 
 
     def step(self, action):
@@ -60,18 +63,28 @@ class PursuitEvasionEnv(gym.Env):
         # Detected done:
         # Goal: (1, 3, 1)
         if pos.any() == goal.any():
-            done = True
+            self.done = True
             reward = 10
         else:
-            done == False
+            self.done == False
         
         info = {}
 
-        return obs, reward, done, info
+        return obs, reward, self.done, info
 
     def reset(self):
-        pass
+        # pass
+        # reset flags
+        self.done = False
 
+        # reset morphology
+        pb.resetBasePositionAndOrientation(self.drone1.quadrotor, self.startPosition1,
+                                            pb.getQuaternionFromEuler([np.pi, np.pi, np.pi]))
+
+        # Get observation and position
+        obs, _ = self.drone1.get_observation()
+
+        return obs
     def render(self):
         pass
 
