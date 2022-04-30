@@ -31,7 +31,7 @@ if __name__ == '__main__':
             action, _steps = model.predict(obs)
             obs, rewards, done, _ = env.step(action)
             # score += rewards
-            print(rewards)
+            print(obs)
 
     print("done!")
 

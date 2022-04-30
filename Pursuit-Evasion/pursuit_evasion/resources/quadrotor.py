@@ -36,7 +36,7 @@ class Quadrotor:
         
         # Get observation
         robotObs = get_robot_state(self.client, self.quadrotor)
-        pos, orn, _, _ = robotObs
+        pos, orn, linearVel, angularVel = robotObs
         observation =  np.array([pos[0], pos[1], pos[2], orn[0], orn[1], orn[2]])
 
-        return observation, pos
+        return observation, pos, linearVel, angularVel
