@@ -16,14 +16,16 @@ def main():
     for ep in range(episodes):
 
         done = False
-        obs = env.reset()
-        print("Initial position:", obs)
+        if ep == 0:
+            obs = env.reset()
+        # print("Initial position:", obs)
         score = 0
 
         while not done:
 
             action, _states = model.predict(obs)
             obs, reward, done, _ = env.step(action)
+            print("Current position: ", obs)
             score += reward
 
     if done:

@@ -15,6 +15,7 @@ class PursuitEvasionEnv(gym.Env):
     def __init__(self):
         
         self.done = False
+        self.timer = 0
 
         # Action Space of 4 actions
         # (force z, torque x, torque y, torque z)
@@ -27,9 +28,9 @@ class PursuitEvasionEnv(gym.Env):
         # Observation Space of 6 elements: 2 arrays of 3 elements
         # (Robot Position(x,y,z), Robot Orientation(x,y,z))
         self.observation_space = gym.spaces.box.Box( # Change to np.inf and 2*np.pi
-            low=np.array([-200, -200, -200, -100, -100, -100]),
-            high=np.array([200, 200, 200, 100, 100, 100]),
-            shape=(6,),
+            low=np.array([-200, -200, -200, -100, -100, -100, -100, -100, -100, -100, -100, -100]),
+            high=np.array([200, 200, 200, 100, 100, 100, 100, 100, 100, 100, 100, 100]),
+            shape=(12,),
             dtype=np.float32)
 
         # Random seed generator
@@ -42,7 +43,7 @@ class PursuitEvasionEnv(gym.Env):
         # Add plane and robot models
         self.planeId = pb.loadURDF("plane.urdf")
         # Drone 1:
-        self.startPosition1 = [0, 1, 1]
+        self.startPosition1 = np.array([0, 1, 1])
         self.drone1 = Quadrotor(urdf='C:/DEV/Pursuit-Evasion/Pursuit-Evasion-Quadcopter/Pursuit-Evasion/pursuit_evasion/resources/robot_models/quadrotor.urdf',
                     startPosition=self.startPosition1, client=self.pbClient)
         # Inicial distance
@@ -62,16 +63,16 @@ class PursuitEvasionEnv(gym.Env):
         reward = 0
         self.done = False
         goal = np.array([1, 3, 1])
-
         # Apply action:
         self.drone1.apply_action(action)
 
         pb.stepSimulation()
         time.sleep(1 / 240)
+        self.timer += 1
 
         # Get observation and position
-        position, orientation, _, _ = self.drone1.get_observation()
-        observation = np.concatenate((position, orientation))
+        position, orientation, linearVel, angularVel = self.drone1.get_observation()
+        observation = np.concatenate((position, orientation, linearVel, angularVel))
         # observation = position
         # Calculate new distance
         posDiff = goal - position
@@ -80,9 +81,13 @@ class PursuitEvasionEnv(gym.Env):
 
         # Reward rules
         # Goal: (1, 3, 1)
-        if position.all() == goal.all():
+        if (position == goal).all():
             self.done = True
             reward = 100
+        elif self.timer >= 100:
+            self.done = True
+            reward = 0
+            self.timer = 0
         elif newDistance1 < self.distance1:
             reward = 10
         elif newDistance1 > self.distance1:
@@ -105,8 +110,8 @@ class PursuitEvasionEnv(gym.Env):
                                             pb.getQuaternionFromEuler([np.pi, np.pi, np.pi]))
 
         # Get observation and position
-        position, orientation, _, _ = self.drone1.get_observation()
-        _observation = np.concatenate((position, orientation))
+        position, orientation, linearVel, angularVel = self.drone1.get_observation()
+        _observation = np.concatenate((position, orientation, linearVel, angularVel))
 
         return _observation
 

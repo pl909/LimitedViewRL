@@ -29,7 +29,7 @@ class Quadrotor:
         torqueZ = action[3]
 
         # Apply movement inputs
-        controlInput = (forceZ, torqueX, torqueY, torqueZ)
+        controlInput = np.array([forceZ, torqueX, torqueY, torqueZ])
         force_torque_control(self.client, self.quadrotor, controlInput)
 
     
