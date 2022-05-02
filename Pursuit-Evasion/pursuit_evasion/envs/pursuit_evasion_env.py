@@ -26,7 +26,7 @@ class PursuitEvasionEnv(gym.Env):
 
         # Observation Space of 6 elements: 2 arrays of 3 elements
         # (Robot Position(x,y,z), Robot Orientation(x,y,z))
-        self.observation_space = gym.spaces.box.Box(
+        self.observation_space = gym.spaces.box.Box( # Change to np.inf and 2*np.pi
             low=np.array([-200, -200, -200, -100, -100, -100]),
             high=np.array([200, 200, 200, 100, 100, 100]),
             shape=(6,),
@@ -107,7 +107,6 @@ class PursuitEvasionEnv(gym.Env):
         # Get observation and position
         position, orientation, _, _ = self.drone1.get_observation()
         _observation = np.concatenate((position, orientation))
-        # _observation = position
 
         return _observation
 

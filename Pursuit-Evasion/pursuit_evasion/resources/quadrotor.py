@@ -1,3 +1,4 @@
+from turtle import position
 import pybullet as pb
 import numpy as np
 import os
@@ -36,7 +37,7 @@ class Quadrotor:
         
         # Get observation
         robotObs = get_robot_state(self.client, self.quadrotor)
-        pos, orn, linearVel, angularVel = robotObs
-        observation =  np.array([pos[0], pos[1], pos[2], orn[0], orn[1], orn[2]])
+        position, orientation, linearVel, angularVel = robotObs
+        # observation =  np.array([pos[0], pos[1], pos[2], orn[0], orn[1], orn[2]])
 
-        return observation, pos, linearVel, angularVel
+        return position, orientation, linearVel, angularVel
