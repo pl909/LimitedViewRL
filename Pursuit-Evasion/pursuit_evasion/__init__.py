@@ -1,3 +1,4 @@
+from .envs.pursuit_evasion_env import PursuitEvasionEnv
 from gym.envs.registration import register
 register(
     id='PursuitEvasion-v0',

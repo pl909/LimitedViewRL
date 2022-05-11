@@ -1,2 +1,4 @@
 from gym import envs
-print(envs.registry.all())
+import sys
+# print(envs.registry.all())
+print(sys.version)

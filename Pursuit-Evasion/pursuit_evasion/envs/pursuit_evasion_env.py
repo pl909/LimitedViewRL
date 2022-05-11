@@ -4,8 +4,8 @@ import numpy as np
 import pybullet as pb
 import time
 
-from pursuit_evasion.resources import utils as r
-from pursuit_evasion.resources import Quadrotor
+from .resources import utils as r
+from .resources import Quadrotor
 
 # PursuitEvasion-v0
 
@@ -37,7 +37,7 @@ class PursuitEvasionEnv(gym.Env):
         self.np_random, _ = gym.utils.seeding.np_random()
 
         # PyBullet server connection (change to DIRECT later)
-        self.pbClient = r.initializeGUI(enable_gui=True)
+        self.pbClient = r.initializeGUI(enable_gui=True, connection='GUI')
 
 
         # Add plane and robot models
@@ -84,7 +84,7 @@ class PursuitEvasionEnv(gym.Env):
         if (position == goal).all():
             self.done = True
             reward = 100
-        elif self.timer >= 100:
+        elif self.timer >= 500:
             self.done = True
             reward = 0
             self.timer = 0
@@ -108,7 +108,6 @@ class PursuitEvasionEnv(gym.Env):
         # reset morphology
         pb.resetBasePositionAndOrientation(self.drone1.quadrotor, self.startPosition1,
                                             pb.getQuaternionFromEuler([np.pi, np.pi, np.pi]))
-
         # Get observation and position
         position, orientation, linearVel, angularVel = self.drone1.get_observation()
         _observation = np.concatenate((position, orientation, linearVel, angularVel))
