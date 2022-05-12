@@ -3,7 +3,7 @@ from pursuit_evasion_env import PursuitEvasionEnv
 env = PursuitEvasionEnv()
 episodes = 50
 
-# Simple gym loop to make a deeper checkenv
+# Simple gym loop
 for episode in range(episodes):
     done = False
     obs = env.reset()
