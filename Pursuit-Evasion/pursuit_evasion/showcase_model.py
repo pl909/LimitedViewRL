@@ -1,13 +1,12 @@
 import gym
-# from pursuit_evasion.envs.pursuit_evasion_env import PursuitEvasionEnv
-import envs.pursuit_evasion_env
+from envs.pursuit_evasion_env import PursuitEvasionEnv
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
-env = gym.make('PursuitEvasion-v0')
+env = PursuitEvasionEnv()
 
 modelFile = "ddpg_single_drone"
-episodes = 100
+episodes = 10
 
 
 def main():

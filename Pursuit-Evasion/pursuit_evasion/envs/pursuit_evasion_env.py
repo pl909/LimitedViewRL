@@ -4,8 +4,8 @@ import numpy as np
 import pybullet as pb
 import time
 
-from .resources import utils as r
-from .resources import Quadrotor
+from resources import utils as r
+from resources import Quadrotor
 
 # PursuitEvasion-v0
 
@@ -26,10 +26,10 @@ class PursuitEvasionEnv(gym.Env):
             dtype=np.float32)
 
         # Observation Space of 6 elements: 2 arrays of 3 elements
-        # (Robot Position(x,y,z), Robot Orientation(x,y,z))
+        # (Robot Position(x,y,z), Robot Orientation(x,y,z), Robot Linear vel, Robot Angular vel)
         self.observation_space = gym.spaces.box.Box( # Change to np.inf and 2*np.pi
-            low=np.array([-200, -200, -200, -100, -100, -100, -100, -100, -100, -100, -100, -100]),
-            high=np.array([200, 200, 200, 100, 100, 100, 100, 100, 100, 100, 100, 100]),
+            low=np.array([-np.inf, -np.inf, -np.inf, -2*np.pi, -2*np.pi, -2*np.pi, -np.inf, -np.inf, -np.inf, -2*np.pi, -2*np.pi, -2*np.pi]),
+            high=np.array([np.inf, np.inf, np.inf, 2*np.pi, 2*np.pi, 2*np.pi, np.inf, np.inf, np.inf, 2*np.pi, 2*np.pi, 2*np.pi]),
             shape=(12,),
             dtype=np.float32)
 
@@ -111,6 +111,7 @@ class PursuitEvasionEnv(gym.Env):
         # Get observation and position
         position, orientation, linearVel, angularVel = self.drone1.get_observation()
         _observation = np.concatenate((position, orientation, linearVel, angularVel))
+        # print("Observation:", _observation)
 
         return _observation
 
