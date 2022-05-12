@@ -42,9 +42,11 @@ class PursuitEvasionEnv(gym.Env):
 
         # Add plane and robot models
         self.planeId = pb.loadURDF("plane.urdf")
-        # Drone 1:
+        # Drone 1: 
+        # Pursuit-Evasion\pursuit_evasion\envs\resources\robot_models\quadrotor.urdf
+        # 'C:/DEV/Pursuit-Evasion/Pursuit-Evasion-Quadcopter/Pursuit-Evasion/pursuit_evasion/resources/robot_models/quadrotor.urdf'
         self.startPosition1 = np.array([0, 1, 1])
-        self.drone1 = Quadrotor(urdf='C:/DEV/Pursuit-Evasion/Pursuit-Evasion-Quadcopter/Pursuit-Evasion/pursuit_evasion/resources/robot_models/quadrotor.urdf',
+        self.drone1 = Quadrotor(urdf='resources/robot_models/quadrotor.urdf',
                     startPosition=self.startPosition1, client=self.pbClient)
         # Inicial distance
         posDiff = np.array([1, 3, 1]) - self.startPosition1
@@ -58,7 +60,7 @@ class PursuitEvasionEnv(gym.Env):
         # Returns observation, reward, done, info
         # observation is an array with 6 elements
         # done returns True if goal is reached or time expired
-        # info is null, assign to _
+        # info is empty
         
         reward = 0
         self.done = False
@@ -83,7 +85,7 @@ class PursuitEvasionEnv(gym.Env):
         # Goal: (1, 3, 1)
         if (position == goal).all():
             self.done = True
-            reward = 100
+            reward = 1000
         elif self.timer >= 500:
             self.done = True
             reward = 0
@@ -91,7 +93,7 @@ class PursuitEvasionEnv(gym.Env):
         elif newDistance1 < self.distance1:
             reward = 10
         elif newDistance1 > self.distance1:
-            reward = -10
+            reward = -100
         # elif position.any == goal.any():
         #     reward = 1
         

@@ -16,6 +16,7 @@ def main():
     for ep in range(episodes):
 
         print("Episode", ep)
+        
         done = False
         obs = env.reset()
         # print("Initial position:", obs)
