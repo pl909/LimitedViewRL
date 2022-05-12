@@ -2,13 +2,13 @@ from tabnanny import verbose
 from cv2 import solve
 import gym
 import numpy as np
-from .envs.pursuit_evasion_env import PursuitEvasionEnv
+from envs.pursuit_evasion_env import PursuitEvasionEnv
 from stable_baselines3 import DDPGclear
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 def main():
 
-    env = gym.make('PursuitEvasion-v0')
+    env = PursuitEvasionEnv
 
     # Noise objects for DDPG
     n_actions = env.action_space.shape[-1]
