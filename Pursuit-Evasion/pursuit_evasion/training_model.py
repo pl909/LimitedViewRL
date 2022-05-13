@@ -1,14 +1,12 @@
-from tabnanny import verbose
-from cv2 import solve
 import gym
 import numpy as np
 from envs.pursuit_evasion_env import PursuitEvasionEnv
-from stable_baselines3 import DDPGclear
+from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 def main():
 
-    env = PursuitEvasionEnv
+    env = PursuitEvasionEnv()
 
     # Noise objects for DDPG
     n_actions = env.action_space.shape[-1]
@@ -21,7 +19,7 @@ def main():
     env = model.get_env()
     # model = DDPG.load("ddpg_single_drone")
 
-    episodes = 100
+    episodes = 10
     # obs = env.reset()
 
     for ep in range(episodes):
