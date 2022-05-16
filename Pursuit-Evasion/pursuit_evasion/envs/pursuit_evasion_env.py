@@ -12,7 +12,7 @@ from resources import Quadrotor
 class PursuitEvasionEnv(gym.Env):
     metadata = {'render.modes': ['human']}  
   
-    def __init__(self):
+    def __init__(self, trainingMode=False):
         
         self.done = False
         self.timer = 0
@@ -37,7 +37,12 @@ class PursuitEvasionEnv(gym.Env):
         self.np_random, _ = gym.utils.seeding.np_random()
 
         # PyBullet server connection (change to DIRECT later)
-        self.pbClient = r.initializeGUI(enable_gui=True, connection='GUI')
+        if trainingMode:
+            connectionType = 'DIRECT'
+        else:
+            connectionType = 'GUI'
+
+        self.pbClient = r.initializeGUI(enable_gui=True, connection=connectionType)
 
 
         # Add plane and robot models
@@ -121,7 +126,7 @@ class PursuitEvasionEnv(gym.Env):
         pass
 
     def close(self):
-        pb.disconnect(self.client)
+        pb.disconnect(self.pbClient)
     
     def seed(self, seed=None): 
         self.np_random, seed = gym.utils.seeding.np_random(seed)

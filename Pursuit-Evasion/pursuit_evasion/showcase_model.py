@@ -3,10 +3,10 @@ from envs.pursuit_evasion_env import PursuitEvasionEnv
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
-env = PursuitEvasionEnv()
+env = PursuitEvasionEnv(trainingMode=False)
 
-modelFile = "ddpg_single_drone"
-episodes = 10
+modelFile = "ddpg_single_drone_2"
+episodes = 2
 
 
 def main():
@@ -39,6 +39,7 @@ def main():
             step += 1
 
     if done:
+        env.close()
         print("Done!")
         print("Final position: ", obs)
         print("Score: ", score)
