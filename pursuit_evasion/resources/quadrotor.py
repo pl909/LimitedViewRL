@@ -6,23 +6,35 @@ import os
 from .utils import *
 
 class Quadrotor:
-    def __init__(self, urdf, startPosition, client):
+    def __init__(self, urdf, startPosition, client, draw_debug=False):
+        # Store both the client object and ID
         self.client = client
-        # f_name = os.path.join(os.path.dirname(__file__),
-        #                       'quadrotor.urdf')
-        # self.pbClient = initializeGUI(enable_gui=True)
-        self.quadrotor = pb.loadURDF(fileName=urdf,
-                              basePosition=startPosition)
-                            #   physicsClientId=initializeGUI(enable_gui=True))
-
-        # Draw robot frame
-        draw_frame(self.client, self.quadrotor, -1)
+        self.client_id = client if isinstance(client, int) else client._client
+        
+        try:
+            self.quadrotor = pb.loadURDF(
+                fileName=urdf,
+                basePosition=startPosition,
+                baseOrientation=pb.getQuaternionFromEuler([0, 0, 0]),
+                physicsClientId=self.client_id
+            )
+            
+            if self.quadrotor < 0:
+                raise ValueError(f"Failed to load URDF file from {urdf}")
+                
+            # Only draw debug frame if requested and in GUI mode
+            if draw_debug and pb.getConnectionInfo(self.client_id)["connectionMethod"] == pb.GUI:
+                draw_frame(self.client_id, self.quadrotor, -1)
+                
+        except Exception as e:
+            print(f"Error loading quadrotor URDF: {str(e)}")
+            print(f"Attempted to load from path: {urdf}")
+            raise
 
     def get_ids(self):
-        return self.client, self.quadrotor
+        return self.client_id, self.quadrotor
 
     def apply_action(self, action):
-
         forceZ = action[0]
         torqueX = action[1]
         torqueY = action[2]
@@ -30,14 +42,10 @@ class Quadrotor:
 
         # Apply movement inputs
         controlInput = np.array([forceZ, torqueX, torqueY, torqueZ])
-        force_torque_control(self.client, self.quadrotor, controlInput)
+        force_torque_control(self.client_id, self.quadrotor, controlInput)
 
-    
     def get_observation(self):
-        
         # Get observation
-        robotObs = get_robot_state(self.client, self.quadrotor)
+        robotObs = get_robot_state(self.client_id, self.quadrotor)
         position, orientation, linearVel, angularVel = robotObs
-        # observation =  np.array([pos[0], pos[1], pos[2], orn[0], orn[1], orn[2]])
-
         return position, orientation, linearVel, angularVel

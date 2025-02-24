@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="plane">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="10 10 0.01"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="10 10 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+</robot> 

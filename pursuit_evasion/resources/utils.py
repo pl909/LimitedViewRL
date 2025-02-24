@@ -13,26 +13,16 @@ def set_camera(distance, yaw, pitch, position):
                                   cameraTargetPosition=position)
 
 
-def initializeGUI(enable_gui=True, connection='GUI'):
-    if connection == 'DIRECT':
-        pb_client = bc.BulletClient(connection_mode=pb.DIRECT)
+def initializeGUI(enable_gui=True, connection=pb.DIRECT):
+    """Initialize PyBullet physics server."""
+    if enable_gui:
+        physicsClient = pb.connect(pb.GUI)
     else:
-        pb_client = bc.BulletClient(connection_mode=pb.GUI)
-
-    pb_client.configureDebugVisualizer(pb.COV_ENABLE_RGB_BUFFER_PREVIEW, False)
-    pb_client.configureDebugVisualizer(pb.COV_ENABLE_DEPTH_BUFFER_PREVIEW, False)
-    pb_client.configureDebugVisualizer(pb.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, False)
-    pb_client.configureDebugVisualizer(pb.COV_ENABLE_GUI, enable_gui)
-
-    pb_client.resetDebugVisualizerCamera(cameraDistance=2,
-                                         cameraYaw=0,
-                                         cameraPitch=-20,
-                                         cameraTargetPosition=(0, 0, .5))
-
-    pb_client.setAdditionalSearchPath(pybullet_data.getDataPath()) #used by loadURDF
-    pb_client.setGravity(0, 0, -10)
-
-    return pb_client
+        physicsClient = pb.connect(connection)
+        
+    pb.setGravity(0, 0, -9.81, physicsClientId=physicsClient)
+    pb.setRealTimeSimulation(0, physicsClientId=physicsClient)
+    return physicsClient
 
 
 def mark_waypoint(pb_client, waypoint, axis_length=.2, line_width=1):
@@ -53,27 +43,59 @@ def mark_waypoint(pb_client, waypoint, axis_length=.2, line_width=1):
                                lineWidth=line_width,
                                lineColorRGB=(0,0,1))
     
-def draw_frame(pb_client, robot_id, link_index, axis_length=.2, line_width=1):
-    pb_client.addUserDebugLine(lineFromXYZ=(0,0,0),
-                               lineToXYZ=(axis_length,0,0),
-                               lineColorRGB=(1,0,0),
-                               lineWidth=line_width,
-                               parentObjectUniqueId=robot_id,
-                               parentLinkIndex=link_index)
+def draw_frame(pb_client, robot_id, link_id):
+    """Draw coordinate frame for debugging."""
+    try:
+        # Ensure we're using the client ID number
+        if isinstance(pb_client, int):
+            client_id = pb_client
+        else:
+            client_id = pb_client._client
 
-    pb_client.addUserDebugLine(lineFromXYZ=(0,0,0),
-                               lineToXYZ=(0,axis_length,0),
-                               lineColorRGB=(0,1,0),
-                               lineWidth=line_width,
-                               parentObjectUniqueId=robot_id,
-                               parentLinkIndex=link_index)
+        if pb.getConnectionInfo(client_id)["connectionMethod"] != pb.GUI:
+            return  # Don't draw in DIRECT mode
 
-    pb_client.addUserDebugLine(lineFromXYZ=(0,0,0),
-                               lineToXYZ=(0,0,axis_length),
-                               lineColorRGB=(0,0,1),
-                               lineWidth=line_width,
-                               parentObjectUniqueId=robot_id,
-                               parentLinkIndex=link_index)
+        pos, orn = pb.getBasePositionAndOrientation(robot_id, physicsClientId=client_id)
+        rot_matrix = pb.getMatrixFromQuaternion(orn)
+        
+        # Draw three lines for coordinate frame
+        axis_length = 0.2
+        axis_width = 2
+        
+        # X axis - Red
+        pb.addUserDebugLine(
+            pos,
+            [pos[0] + rot_matrix[0] * axis_length,
+             pos[1] + rot_matrix[1] * axis_length,
+             pos[2] + rot_matrix[2] * axis_length],
+            [1, 0, 0],
+            axis_width,
+            physicsClientId=client_id
+        )
+        
+        # Y axis - Green
+        pb.addUserDebugLine(
+            pos,
+            [pos[0] + rot_matrix[3] * axis_length,
+             pos[1] + rot_matrix[4] * axis_length,
+             pos[2] + rot_matrix[5] * axis_length],
+            [0, 1, 0],
+            axis_width,
+            physicsClientId=client_id
+        )
+        
+        # Z axis - Blue
+        pb.addUserDebugLine(
+            pos,
+            [pos[0] + rot_matrix[6] * axis_length,
+             pos[1] + rot_matrix[7] * axis_length,
+             pos[2] + rot_matrix[8] * axis_length],
+            [0, 0, 1],
+            axis_width,
+            physicsClientId=client_id
+        )
+    except Exception as e:
+        print(f"Warning: Could not draw debug frame: {str(e)}")
 
 def add_debug_parameters(pb_client, parameter_info):
     debug_parameter_ids = []
@@ -112,7 +134,25 @@ def get_velocity(pb_client, robot_id):
     return (linear_velocity_local_frame, angular_velocity_local_frame)
 
 def get_robot_state(pb_client, robot_id):
-    return get_pose(pb_client, robot_id) + get_velocity(pb_client, robot_id)
+    """Get robot state from PyBullet."""
+    # Ensure we're using the client ID number
+    if isinstance(pb_client, int):
+        client_id = pb_client
+    else:
+        client_id = pb_client._client
+
+    position, orientation = pb.getBasePositionAndOrientation(
+        robot_id, 
+        physicsClientId=client_id
+    )
+    velocity = pb.getBaseVelocity(
+        robot_id, 
+        physicsClientId=client_id
+    )
+    
+    linear_vel, angular_vel = velocity
+    
+    return np.array(position), np.array(orientation), np.array(linear_vel), np.array(angular_vel)
 
 def get_joint_info(pb_client, robot_id):
     number_of_joints = pb_client.getNumJoints(bodyUniqueId=robot_id)
@@ -148,16 +188,32 @@ def propeller_control(pb_client, robot_id, propeller_force, arm_length=.1750, dr
                                   flags=pb.LINK_FRAME)
 
 def force_torque_control(pb_client, robot_id, control_input):
-    pb_client.applyExternalForce(robot_id,
-                                 -1,
-                                 forceObj=[0,0,control_input[0]],
-                                 posObj=(0,0,0),
-                                 flags=pb.LINK_FRAME)
+    """Apply force and torque control to robot."""
+    # Ensure we're using the client ID number
+    if isinstance(pb_client, int):
+        client_id = pb_client
+    else:
+        client_id = pb_client._client
 
-    pb_client.applyExternalTorque(robot_id,
-                                  -1,
-                                  torqueObj=control_input[1:],
-                                  flags=pb.LINK_FRAME)
+    force = [0, 0, control_input[0]]  # Only Z force
+    torque = control_input[1:]  # X, Y, Z torques
+    
+    pb.applyExternalForce(
+        robot_id,
+        -1,  # Link ID (-1 for base)
+        force,
+        [0, 0, 0],  # Position relative to COM
+        pb.LINK_FRAME,
+        physicsClientId=client_id
+    )
+    
+    pb.applyExternalTorque(
+        robot_id,
+        -1,  # Link ID (-1 for base)
+        torque,
+        pb.LINK_FRAME,
+        physicsClientId=client_id
+    )
 
 def compute_control_gain():
     mass = .5
